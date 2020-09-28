@@ -38,6 +38,7 @@ import { ProceduralCircleAvatar } from '../shared-components/ProceduralCircleAva
 import { SwipeHelperReactNavTabBar } from '../shared-components/SwipeNavRecognizer'
 
 import Logo from './1_berty_picto.svg'
+import LogoAnim from '../shared-components/1_berty_animation_white_bg.gif'
 import EmptyChat from './empty_chat.svg'
 import AvatarGroup19 from './Avatar_Group_Copy_19.png'
 
@@ -367,8 +368,9 @@ const HomeHeader: React.FC<
 		hasRequests: boolean
 		scrollRef: React.RefObject<ScrollView>
 		isOnTop: boolean
+		isDrag: boolean
 	}
-> = ({ hasRequests, scrollRef, onLayout, isOnTop }) => {
+> = ({ hasRequests, scrollRef, onLayout, isOnTop, isDrag }) => {
 	const [{ border, padding, margin, text, background }, { scaleHeight }] = useStyles()
 
 	return (
@@ -395,13 +397,16 @@ const HomeHeader: React.FC<
 						<View
 							style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}
 						>
-							<Logo
-								width={35}
-								height={35}
-								onPress={() => {
-									scrollRef.current?.scrollTo({ y: 0, animated: true })
-								}}
-							/>
+							{!isDrag && (
+								<Logo
+									width={35}
+									height={35}
+									onPress={() => {
+										scrollRef.current?.scrollTo({ y: 0, animated: true })
+									}}
+								/>
+							)}
+							{isDrag && <Image source={LogoAnim} style={{ height: 35, width: 35 }} />}
 							<Text
 								style={[
 									text.color.black,
@@ -427,6 +432,7 @@ export const Home: React.FC<ScreenProps.Main.Home> = () => {
 	const [layoutRequests, onLayoutRequests] = useLayout()
 	const [layoutConversations, onLayoutConversations] = useLayout()
 	const [layoutHeader, onLayoutHeader] = useLayout()
+	const [isDrag, setIsDrag] = useState(false)
 
 	const requests: any[] = useIncomingContactRequests()
 	const conversations: any[] = useConversationList() // TODO: sort
@@ -445,6 +451,8 @@ export const Home: React.FC<ScreenProps.Main.Home> = () => {
 	const navigation = useNativeNavigation()
 	const contacts = useContacts()
 
+	const logoAnimDuration = 11660
+
 	const styleBackground = useMemo(
 		() => (requests.length > 0 ? background.blue : background.white),
 		[background.blue, background.white, requests.length],
@@ -461,6 +469,16 @@ export const Home: React.FC<ScreenProps.Main.Home> = () => {
 			})
 		}
 	})
+
+	React.useEffect(() => {
+		let timeoutDrag: number
+		if (isDrag) {
+			timeoutDrag = setTimeout(() => {
+				setIsDrag(false)
+			}, logoAnimDuration)
+		}
+		return () => clearInterval(timeoutDrag)
+	}, [setIsDrag, isDrag])
 
 	return (
 		<>
@@ -486,6 +504,12 @@ export const Home: React.FC<ScreenProps.Main.Home> = () => {
 								setOffset(e.nativeEvent.contentOffset)
 							}
 						}}
+						onScrollBeginDrag={(e) => {
+							setIsDrag(true)
+						}}
+						// onScrollEndDrag={(e) => {
+						// 	setIsDrag(false)
+						// }}
 					>
 						<IncomingRequests items={requests} onLayout={onLayoutRequests} />
 
@@ -494,6 +518,7 @@ export const Home: React.FC<ScreenProps.Main.Home> = () => {
 							onLayout={onLayoutHeader}
 							hasRequests={requests.length > 0}
 							scrollRef={scrollRef}
+							isDrag={isDrag}
 						/>
 						{isConversation ? (
 							<Conversations items={conversations} onLayout={onLayoutConversations} />
