@@ -101,7 +101,7 @@ export const ChatHeader: React.FC<any> = ({ convPk, stickyDate, showStickyDate }
 
 	const persistOpts = usePersistentOptions()
 	const isBetabot =
-		persistOpts && conv?.contactPublicKey?.toString() === persistOpts?.betabot?.convPk?.toString()
+		persistOpts && conv.contactPublicKey.toString() === persistOpts?.betabot?.convPk?.toString()
 
 	if (!conv || !contact) {
 		goBack()
@@ -603,6 +603,7 @@ const MessageList: React.FC<{
 			msg.type === messengerpb.AppMessage.Type.TypeUserMessage ||
 			msg.type === messengerpb.AppMessage.Type.TypeGroupInvitation,
 	)
+	const [convFirstDayVisible, setConvFirstDayVisible] = useState(true)
 
 	if (conv.replyOptions !== null) {
 		messages.push(conv.replyOptions)
@@ -660,10 +661,20 @@ const MessageList: React.FC<{
 
 	const updateStickyDate: (info: { viewableItems: ViewToken[] }) => void = ({ viewableItems }) => {
 		if (viewableItems && viewableItems.length) {
-			const minDate = viewableItems[viewableItems.length - 1]?.section?.title
+			const minSection = viewableItems[viewableItems.length - 1]?.section
+			const minDate = minSection?.title
 			if (minDate) {
 				setStickyDate(moment(minDate, 'DD/MM/YYYY').unix() * 1000)
 			}
+			if (!minSection || !minSection?.index || minSection?.index === 0) {
+				setShowStickyDate(false)
+				setConvFirstDayVisible(true)
+			} else {
+				setConvFirstDayVisible(false)
+			}
+		} else {
+			setShowStickyDate(false)
+			setConvFirstDayVisible(true)
 		}
 	}
 
@@ -685,7 +696,7 @@ const MessageList: React.FC<{
 			onViewableItemsChanged={updateStickyDate}
 			initialNumToRender={20}
 			onScrollBeginDrag={(e) => {
-				setShowStickyDate(true) // TODO: tmp
+				setShowStickyDate(convFirstDayVisible ? false : true)
 			}}
 			onScrollEndDrag={(e) => {
 				setTimeout(() => setShowStickyDate(false), 2000)

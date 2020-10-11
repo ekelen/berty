@@ -251,7 +251,12 @@ const _createSections = (items: any[]) => {
 		const grouped = groupBy(items, (m) =>
 			moment(pbDateToNum(m?.sentDate || Date.now())).format('DD/MM/YYYY'),
 		)
-		const mapped = Object.entries(grouped).map(([k, v], i) => ({ title: k, data: v, index: i }))
+		const mapped = Object.entries(grouped).map(([k, msgs], i) => ({
+			title: k,
+			data: msgs.map((msg, j) => ({ ...msg, index: j })),
+			index: i,
+		}))
+		console.log('mapped:', JSON.stringify(mapped, null, 2))
 		return mapped
 	} catch (e) {
 		console.warn('could not make sections from data:', e)
@@ -286,6 +291,8 @@ const MessageList: React.FC<{
 		}
 	}, [interactions, scrollToMessage])
 	const flatListRef: any = React.useRef(null)
+
+	const [convFirstDayVisible, setConvFirstDayVisible] = useState(true)
 
 	const onScrollToIndexFailed = () => {
 		// Not sure why this happens (something to do with item/screen dimensions I think)
@@ -324,10 +331,20 @@ const MessageList: React.FC<{
 
 	const updateStickyDate: (info: { viewableItems: ViewToken[] }) => void = ({ viewableItems }) => {
 		if (viewableItems && viewableItems.length) {
-			const minDate = viewableItems[viewableItems.length - 1]?.section?.title
+			const minSection = viewableItems[viewableItems.length - 1]?.section
+			const minDate = minSection?.title
 			if (minDate) {
 				setStickyDate(moment(minDate, 'DD/MM/YYYY').unix() * 1000)
 			}
+			if (!minSection || !minSection?.index || minSection?.index === 0) {
+				setShowStickyDate(false)
+				setConvFirstDayVisible(true)
+			} else {
+				setConvFirstDayVisible(false)
+			}
+		} else {
+			setShowStickyDate(false)
+			setConvFirstDayVisible(true)
 		}
 	}
 
@@ -351,7 +368,7 @@ const MessageList: React.FC<{
 			onViewableItemsChanged={updateStickyDate}
 			initialNumToRender={20}
 			onScrollBeginDrag={(e) => {
-				setShowStickyDate(false) // TODO: tmp until hide if start of conversation is visible
+				setShowStickyDate(convFirstDayVisible ? false : true)
 			}}
 			onScrollEndDrag={(e) => {
 				setTimeout(() => setShowStickyDate(false), 2000)
