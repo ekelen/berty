@@ -102,7 +102,9 @@ const ReplicateGroupContent: React.FC<{
 	const navigation = useNavigation()
 	const [{ margin, color, flex, padding }] = useStyles()
 
-	const replicationStatus = getAllReplicationStatusForConversation(conversation, services)
+	const replicationStatus = !Array.isArray(conversation?.replicationInfo)
+		? []
+		: getAllReplicationStatusForConversation(conversation, services)
 
 	return (
 		<View style={[flex.tiny, padding.medium, margin.bottom.medium]}>

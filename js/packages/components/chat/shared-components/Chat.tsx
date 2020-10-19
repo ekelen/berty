@@ -38,7 +38,7 @@ export const ChatFooter: React.FC<{
 	const inputRef = useRef<TextInput>(null)
 	const _isFocused = isFocused || inputRef?.current?.isFocused() || false
 	const _styles = useStylesChatFooter()
-	const [{ row, padding, flex, border, color, text }] = useStyles()
+	const [{ row, padding, flex, border, color, text, maxWidth }] = useStyles()
 
 	const usermsg = { body: message, sentDate: Date.now() }
 	const buf = messengerpb.AppMessage.UserMessage.encode(usermsg).finish()
@@ -78,12 +78,14 @@ export const ChatFooter: React.FC<{
 						style={[
 							flex.tiny,
 							border.radius.medium,
-							padding.small,
+							padding.medium,
 							row.fill,
 							{
 								alignItems: 'center',
 								backgroundColor: _isFocused ? '#E8E9FC99' : '#F7F8FF',
 								marginBottom: _isFocused ? 0 : 16,
+								paddingTop: padding.medium.padding * 0.8,
+								paddingBottom: padding.medium.padding * 0.8,
 							},
 						]}
 					>
@@ -118,7 +120,7 @@ export const ChatFooter: React.FC<{
 							placeholderTextColor={_isFocused ? color.blue : '#AFB1C0'}
 						/>
 						<TouchableOpacity
-							style={[flex.tiny, { justifyContent: 'center', alignItems: 'center' }]}
+							style={[flex.tiny, maxWidth(30), flex.justify.center, flex.align.center]}
 							disabled={isFake}
 							onPress={() => {
 								if (isFake) {
@@ -151,6 +153,8 @@ export const ChatFooter: React.FC<{
 // Types
 type ChatDateProps = {
 	date: number
+	styleContainer?: any
+	styleText?: any
 }
 
 // Styles
@@ -162,14 +166,29 @@ const useStylesChatDate = () => {
 	}
 }
 
-export const ChatDate: React.FC<ChatDateProps> = ({ date }) => {
+export const ChatDate: React.FC<ChatDateProps> = ({
+	date,
+	styleContainer = {},
+	styleText = {},
+}) => {
 	const _styles = useStylesChatDate()
 	const [{ border, row }] = useStyles()
 	const backgroundColor = '#F7F8FF'
 	const textColor = '#AFB1C0'
+
+	const _styleContainer = [
+		row.item.justify,
+		border.radius.medium,
+		_styles.date,
+		{ backgroundColor },
+		styleContainer,
+	]
+
+	const _styleText = [_styles.dateText, { color: textColor }, styleText]
+
 	return (
-		<View style={[row.item.justify, border.radius.medium, _styles.date, { backgroundColor }]}>
-			<Text style={[_styles.dateText, { color: textColor }]}>{timeFormat.fmtTimestamp2(date)}</Text>
+		<View style={_styleContainer}>
+			<Text style={_styleText}>{timeFormat.fmtTimestamp2(date)}</Text>
 		</View>
 	)
 }

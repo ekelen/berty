@@ -87,8 +87,12 @@ const MemberList: React.FC<{
 				showsHorizontalScrollIndicator={false}
 				contentContainerStyle={[padding.left.medium]}
 			>
-				{members.map((member: any) => (
-					<MemberItem member={member} onRemove={() => onRemoveMember(member.publicKey)} />
+				{members.map((member: any, index: number) => (
+					<MemberItem
+						key={member.publicKey || index}
+						member={member}
+						onRemove={() => onRemoveMember(member.publicKey)}
+					/>
 				))}
 			</ScrollView>
 		</View>

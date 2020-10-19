@@ -160,6 +160,7 @@ const AddMembers: React.FC<AddMembersProps> = ({
 					>
 						{contacts.map((contact, index) => (
 							<AddMembersItem
+								key={`${contact.publicKey || index}`}
 								onSetMember={onSetMember}
 								onRemoveMember={onRemoveMember}
 								added={!!members.find((member) => member.publicKey === contact.publicKey)}
@@ -221,8 +222,12 @@ export const MemberList: React.FC<{
 				showsHorizontalScrollIndicator={false}
 				contentContainerStyle={[padding.left.medium]}
 			>
-				{members.map((member) => (
-					<MemberItem member={member} onRemove={() => onRemoveMember(member.publicKey)} />
+				{members.map((member, index) => (
+					<MemberItem
+						key={member.publicKey || index}
+						member={member}
+						onRemove={() => onRemoveMember(member.publicKey)}
+					/>
 				))}
 			</ScrollView>
 		</View>

@@ -198,8 +198,13 @@ const ContactRequest: React.FC<api.berty.messenger.v1.IContact> = ({
 						<Text
 							style={[
 								text.size.scale(10),
+								text.bold.small,
 								text.align.center,
-								{ lineHeight: (text.size.scale(11) as any).fontSize * 2, color: '#888' },
+								{
+									fontWeight: '400',
+									lineHeight: (text.size.scale(11) as any).fontSize * 2,
+									color: '#888',
+								},
 							]}
 						>
 							<FromNow date={createdDate} />
@@ -522,7 +527,7 @@ const ConversationsItem: React.FC<ConversationsItemProps> = (props) => {
 							flex.direction.row,
 							flex.align.center,
 							{
-								height: text.size.medium.fontSize * 1.6, // Keep row height even if no description/message
+								minHeight: text.size.small.fontSize * 1.4, // Keep row height even if no description/message
 							},
 						]}
 					>
@@ -530,7 +535,7 @@ const ConversationsItem: React.FC<ConversationsItemProps> = (props) => {
 							numberOfLines={1}
 							style={[
 								{ flexGrow: 2, flexShrink: 1 },
-								text.size.medium,
+								text.size.small,
 								unreadCount
 									? isBetabot && !isBetabotAdded
 										? text.color.grey

@@ -112,6 +112,7 @@ const MultiMemberSettingsBody: React.FC<any> = ({ publicKey, link }) => {
 				{Object.entries(members).map(([k, v]) => {
 					return (
 						<ButtonSetting
+							key={`${k}`}
 							style={[padding.horizontal.small]}
 							name={`${(members && members[k].displayName) || 'Unknown'}: ${members[k].publicKey}`}
 							// image={seed}

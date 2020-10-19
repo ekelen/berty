@@ -29,11 +29,7 @@ import {
 } from '@berty-tech/store/hooks'
 
 import { ProceduralCircleAvatar } from '../shared-components/ProceduralCircleAvatar'
-import {
-	Message,
-	MessageInvitationWrapper,
-	MessageInvitationButton,
-} from './shared-components/Message'
+import { Message, SystemMessageWrapper, MessageInvitationButton } from './shared-components/Message'
 import BlurView from '../shared-components/BlurView'
 import messengerMethodsHooks from '@berty-tech/store/methods'
 
@@ -208,60 +204,6 @@ export const ChatHeader: React.FC<any> = ({ convPk, stickyDate, showStickyDate }
 					<ChatDate date={stickyDate} />
 				</View>
 			)}
-		</View>
-	)
-}
-
-// TODO: refactor CSS; this uses almost the same styles as chat invitation wrapper
-const ContactInitiatedWrapper: React.FC<{ children: any }> = ({ children }) => {
-	const [
-		{ padding, border, flex, margin, width, background, height, minWidth },
-		{ scaleSize },
-	] = useStyles()
-	const logoDiameter = 28
-	const diffSize = 6
-	return (
-		<View
-			style={[
-				{ backgroundColor: '#EDEEF8' },
-				padding.bottom.tiny,
-				padding.horizontal.medium,
-				margin.top.scale(logoDiameter + 10),
-				border.radius.scale(10),
-				flex.justify.center,
-				minWidth(0),
-				{ shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2.5 } },
-			]}
-		>
-			<View
-				style={{
-					transform: [{ translateY: -logoDiameter * 1.15 * scaleSize }],
-					alignSelf: 'center',
-					marginBottom: -logoDiameter * scaleSize, // compensate for transformed logo
-				}}
-			>
-				<View
-					style={[
-						flex.align.center,
-						flex.justify.center,
-						width(logoDiameter + diffSize * scaleSize),
-						height(logoDiameter + diffSize * scaleSize),
-						background.white,
-						border.radius.scale((logoDiameter + diffSize) / 2),
-						{
-							borderWidth: 2,
-							borderColor: 'rgba(215, 217, 239, 1)',
-						},
-					]}
-				>
-					<Logo
-						width={scaleSize * logoDiameter - diffSize}
-						height={scaleSize * logoDiameter - diffSize}
-						style={[margin.left.tiny]} // nudge logo to appear centered
-					/>
-				</View>
-			</View>
-			{children}
 		</View>
 	)
 }
@@ -536,23 +478,23 @@ const InfosChat: React.FC<api.berty.messenger.v1.IConversation & any> = ({
 
 	return (
 		<View style={[padding.medium, flex.align.center]}>
-			<ChatDate date={createdDate} />
+			<ChatDate date={createdDate} styleContainer={[margin.bottom.small]} />
 			{!isIncoming ? (
 				<>
 					{isBetabot && !isBetabotAdded ? (
 						<AddBetabotBox />
 					) : (
-						<ContactInitiatedWrapper>
-							<Text style={[text.align.center, text.italic, { color: textColor }]}>
-								{isAccepted ? '👋 Berty connection confirmed! 🎉' : 'Request Sent'}
+						<SystemMessageWrapper>
+							<Text style={[text.size.medium, text.align.center, { color: textColor }]}>
+								{isAccepted ? 'Connected! 👋 ' : 'Request Sent ✉️'}
 							</Text>
-						</ContactInitiatedWrapper>
+						</SystemMessageWrapper>
 					)}
 				</>
 			) : (
-				<MessageInvitationWrapper>
+				<SystemMessageWrapper>
 					<ContactRequestBox contact={contact} isAccepted={isAccepted} />
-				</MessageInvitationWrapper>
+				</SystemMessageWrapper>
 			)}
 			{!isAccepted && contact.state !== messengerpb.Contact.State.Undefined && (
 				<>
@@ -601,7 +543,7 @@ const MessageList: React.FC<{
 			msg.type === messengerpb.AppMessage.Type.TypeGroupInvitation,
 	)
 
-	if (conv.replyOptions !== null) {
+	if (conv?.replyOptions && conv?.replyOptions !== null) {
 		messages.push(conv.replyOptions)
 	}
 	const [{ overflow, row, flex, margin }, { scaleHeight }] = useStyles()
@@ -638,7 +580,10 @@ const MessageList: React.FC<{
 		return (
 			<View style={[margin.bottom.tiny]}>
 				{section?.index > 0 && (
-					<ChatDate date={moment(section.title, 'DD/MM/YYYY').unix() * 1000} />
+					<ChatDate
+						date={moment(section.title, 'DD/MM/YYYY').unix() * 1000}
+						styleContainer={[margin.top.small]}
+					/>
 				)}
 			</View>
 		)

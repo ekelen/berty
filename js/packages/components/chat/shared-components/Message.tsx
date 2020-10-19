@@ -49,7 +49,6 @@ const useStylesMessage = () => {
 		isMeMessage: [row.item.bottom, { maxWidth: '90%' }],
 		isOtherMessage: [row.item.top, { maxWidth: '90%' }],
 		circleAvatarUserMessage: [row.item.bottom, width(40)],
-		messageItem: [],
 		personNameInGroup: text.size.tiny,
 		dateMessage: text.size.tiny,
 		dateMessageWithState: [padding.right.scale(5), text.size.tiny],
@@ -113,7 +112,10 @@ export const MessageInvitationButton: React.FC<{
 	)
 }
 
-export const MessageInvitationWrapper: React.FC<{ children: any }> = ({ children }) => {
+export const SystemMessageWrapper: React.FC<{ children: any; styleContainer?: any }> = ({
+	children,
+	styleContainer = {},
+}) => {
 	const [{ padding, border, flex, margin, width, background, height }, { scaleSize }] = useStyles()
 	const logoDiameter = 28
 	const diffSize = 6
@@ -122,10 +124,11 @@ export const MessageInvitationWrapper: React.FC<{ children: any }> = ({ children
 			style={[
 				{ backgroundColor: '#EDEEF8' },
 				padding.medium,
-				margin.top.scale(logoDiameter), // make room for logo
+				margin.top.scale(logoDiameter / 2), // make room for logo
 				width(350),
 				border.radius.scale(10),
 				{ shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2.5 } },
+				styleContainer,
 			]}
 		>
 			<View
@@ -162,14 +165,13 @@ export const MessageInvitationWrapper: React.FC<{ children: any }> = ({ children
 }
 
 const MessageInvitationSent: React.FC<{ message: any }> = ({ message }) => {
-	const [{ row, flex, text }] = useStyles()
+	const [{ text }] = useStyles()
 	const conversationContact = useOneToOneContact(message.conversationPublicKey)
+	const textColor = '#4E58BF'
 	return (
-		<View style={[row.center, flex.justify.spaceEvenly, flex.align.center]}>
-			<Text style={[text.size.scale(14)]}>
-				You have sent an invitation to {conversationContact.displayName || '<unnamed user!>'}!
-			</Text>
-		</View>
+		<Text style={[text.size.medium, text.align.center, { color: textColor }]}>
+			You invited {conversationContact.displayName || 'this contact'} to a group! 📫
+		</Text>
 	)
 }
 
@@ -305,13 +307,13 @@ export const MessageInvitation: React.FC<{ message: any }> = ({ message }) => {
 			style={[row.center, padding.horizontal.medium, margin.bottom.scale(11), { paddingTop: 2 }]}
 		>
 			{message.isMe ? (
-				<MessageInvitationWrapper>
+				<SystemMessageWrapper styleContainer={[margin.top.medium]}>
 					<MessageInvitationSent message={message} />
-				</MessageInvitationWrapper>
+				</SystemMessageWrapper>
 			) : (
-				<MessageInvitationWrapper>
+				<SystemMessageWrapper styleContainer={[margin.top.medium]}>
 					<MessageInvitationReceived message={message} />
-				</MessageInvitationWrapper>
+				</SystemMessageWrapper>
 			)}
 		</View>
 	)
@@ -334,7 +336,10 @@ export const Message: React.FC<{
 	const client: any = useClient()
 	const navigation = useNativeNavigation()
 	const _styles = useStylesMessage()
-	const [{ row, margin, padding, column, text, border, color }, { scaleSize }] = useStyles()
+	const [
+		{ flex, row, margin, padding, column, text, border, color },
+		{ scaleSize, fontScale },
+	] = useStyles()
 	const lastInte = useLastConvInteraction(convPK, interactionsFilter)
 	if (!inte) {
 		return null
@@ -410,6 +415,7 @@ export const Message: React.FC<{
 					inte.isMe ? _styles.isMeMessage : _styles.isOtherMessage,
 					padding.horizontal.medium,
 					padding.top.scale(2),
+					{ marginBottom: margin.bottom.tiny.marginBottom * 0.5 },
 				]}
 			>
 				{!inte.isMe && isGroup && !isFollowedMessage && (
@@ -419,7 +425,7 @@ export const Message: React.FC<{
 						size={40 * scaleSize}
 					/>
 				)}
-				<View style={[column.top, _styles.messageItem]}>
+				<View style={[column.top]}>
 					{!inte.isMe && isGroup && !isFollowupMessage && (
 						<View style={[isFollowedMessage && margin.left.scale(40)]}>
 							<Text
@@ -435,8 +441,8 @@ export const Message: React.FC<{
 							inte.isMe ? border.radius.left.medium : border.radius.right.medium,
 							msgBorderColor,
 							inte.isMe && border.scale(2),
-							padding.horizontal.scale(inte.isMe ? 11 : 13),
-							padding.vertical.scale(inte.isMe ? 7 : 9),
+							padding.horizontal.scale(inte.isMe ? 10 : 13),
+							padding.vertical.scale(inte.isMe ? 6 : 9),
 							inte.isMe ? column.item.right : column.item.left,
 							isFollowedMessage && margin.left.scale(35),
 							{
@@ -460,10 +466,10 @@ export const Message: React.FC<{
 						>
 							<Text
 								style={[
+									text.size.small,
 									{
 										color: msgTextColor,
-										fontSize: 12,
-										lineHeight: 17,
+										lineHeight: 12 * fontScale * 1.5,
 									},
 								]}
 							>
@@ -471,44 +477,40 @@ export const Message: React.FC<{
 							</Text>
 						</Hyperlink>
 					</View>
-					<View style={[inte.isMe && row.item.bottom]}>
-						<View style={[row.left, { alignItems: 'center' }]}>
-							{!isWithinCollapseDuration && (
+					<View style={[inte.isMe && row.item.bottom, row.left, flex.align.center]}>
+						{!isWithinCollapseDuration && (
+							<Text
+								style={[
+									text.color.grey,
+									_styles.dateMessage,
+									isFollowedMessage && !inte.isMe && margin.left.scale(35),
+								]}
+							>
+								{sentDate > 0 ? timeFormat.fmtTimestamp3(sentDate) : ''}{' '}
+							</Text>
+						)}
+						{!cmd && !isWithinCollapseDuration && lastInte?.cid.toString() === id.toString() && (
+							<>
+								{inte.isMe && (
+									<Icon
+										name={inte.acknowledged ? 'navigation-2' : 'navigation-2-outline'}
+										width={12}
+										height={12}
+										fill={color.blue}
+									/>
+								)}
 								<Text
 									style={[
-										text.color.grey,
-										padding.right.scale(5),
-										_styles.dateMessage,
-										isFollowedMessage && margin.left.scale(35),
-										text.size.scale(11),
+										text.color.blue,
+										padding.left.scale(2),
+										_styles.stateMessageValue,
+										{ textAlignVertical: 'center' },
 									]}
 								>
-									{sentDate > 0 ? timeFormat.fmtTimestamp3(sentDate) : ''}{' '}
+									{inte.isMe ? (inte.acknowledged ? 'sent' : 'sending...') : ''}
 								</Text>
-							)}
-							{!cmd && !isWithinCollapseDuration && lastInte?.cid.toString() === id.toString() && (
-								<>
-									{inte.isMe && (
-										<Icon
-											name={inte.acknowledged ? 'navigation-2' : 'navigation-2-outline'}
-											width={12}
-											height={12}
-											fill={color.blue}
-										/>
-									)}
-									<Text
-										style={[
-											text.color.blue,
-											padding.left.scale(2),
-											_styles.dateMessage,
-											{ fontSize: 10, lineHeight: 11, textAlignVertical: 'center' },
-										]}
-									>
-										{inte.isMe ? (inte.acknowledged ? 'sent' : 'sending...') : ''}
-									</Text>
-								</>
-							)}
-						</View>
+							</>
+						)}
 					</View>
 				</View>
 			</View>

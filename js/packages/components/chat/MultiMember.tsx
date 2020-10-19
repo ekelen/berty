@@ -35,7 +35,7 @@ import {
 	ConversationProceduralAvatar,
 	ProceduralCircleAvatar,
 } from '../shared-components/ProceduralCircleAvatar'
-import { Message } from './shared-components/Message'
+import { Message, SystemMessageWrapper } from './shared-components/Message'
 import BlurView from '../shared-components/BlurView'
 import { SwipeNavRecognizer } from '../shared-components/SwipeNavRecognizer'
 import AvatarGroup19 from '../main/Avatar_Group_Copy_19.png'
@@ -223,15 +223,18 @@ const MemberList: React.FC<{ members: any }> = ({ members }) => {
 const InfosMultiMember: React.FC<api.berty.messenger.v1.IConversation> = ({
 	createdDate: createdDateStr,
 }) => {
-	const [{ margin, text }] = useStyles()
+	const [{ text, flex, padding, margin }] = useStyles()
 	// const members = useConvMembers(publicKey)
-	const createdDate = parseInt((createdDateStr as unknown) as string, 10)
+	const createdDate = pbDateToNum(createdDateStr)
+	const textColor = '#4E58BF'
 	return (
-		<View>
-			<ChatDate date={createdDate} />
-			<View style={[margin.vertical.medium]}>
-				<Text style={[text.align.center, text.color.black, text.bold.medium]}>Group joined</Text>
-			</View>
+		<View style={[padding.medium, flex.align.center]}>
+			<ChatDate date={createdDate} wrapperStyle={[margin.bottom.small]} />
+			<SystemMessageWrapper>
+				<Text style={[text.size.medium, text.align.center, { color: textColor }]}>
+					{'Group joined! 👍 '}
+				</Text>
+			</SystemMessageWrapper>
 			{/*<MemberList members={Object.keys(members)} />*/}
 		</View>
 	)
